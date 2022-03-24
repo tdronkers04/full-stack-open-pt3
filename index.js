@@ -38,7 +38,7 @@ let persons = [
 ];
 
 app.get('/', (req, res) => {
-  res.send('<h1>Phonebook App</h1><p>For the API, Navigate to http://localhost:3001/api</p>')
+  res.send('<h1>Phonebook App</h1><p>For the API, Navigate to https://stark-plains-24612.herokuapp.com/api</p>')
 })
 
 app.get('/api/persons', (req, res) => {
