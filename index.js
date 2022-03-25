@@ -47,24 +47,21 @@ app.delete('/api/persons/:id', (req, res, next) => {
     .catch(error => next(error))
 })
 
-app.post('/api/persons', (req, res) => {
+app.post('/api/persons', (req, res, next) => {
   const body = req.body;
 
-  if (!body.name || !body.number) {
-    res.status(400).json({error: 'content missing'})
-  } else {
-    let newPerson = new Person({
-      name: body.name,
-      number: body.number,
-    })
-    
-    newPerson.save()
-      .then(savedPerson => res.json(savedPerson))
-      .catch(error => next(error));
-  }
+  let newPerson = new Person({
+    name: body.name,
+    number: body.number,
+  })
+  
+  newPerson.save()
+    .then(savedPerson => res.json(savedPerson))
+    .catch(error => next(error));
+
 })
 
-app.put('/api/persons/:id', (req, res) => {
+app.put('/api/persons/:id', (req, res, next) => {
   let id = req.params.id;
   let body = req.body;
 
@@ -73,9 +70,13 @@ app.put('/api/persons/:id', (req, res) => {
     number: body.number
   }
 
-  Person.findByIdAndUpdate(id, updatedObj, { new: true })
-    .then(updatedObj => res.json(updatedObj))
-    .catch(error => next(error));
+  Person.findByIdAndUpdate(
+    id, 
+    updatedObj, 
+    { new: true, runValidators: true, context: 'query' }
+    )
+      .then(updatedObj => res.json(updatedObj))
+      .catch(error => next(error));
 })
 
 const unknownEndpoint = (req, res) => {
@@ -87,7 +88,10 @@ const errorHandler = (error, req, res, next) => {
 
   if (error.name === 'CastError') {
     return res.status(400).send({ error: 'malformed id' })
+  } else if (error.name === 'ValidationError') {
+    return res.status(400).json({ error: error.message })
   }
+
   next(error)
 }
 
